@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Membres</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .grille-membres {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .carte-membre {
+      background: var(--panel);
+      border: 1px solid var(--panel-line);
+      border-radius: 8px;
+      padding: 18px;
+      text-align: center;
+    }
+    .carte-membre img {
+      width: 56px; height: 56px; border-radius: 50%;
+      object-fit: cover; margin-bottom: 10px;
+      border: 2px solid var(--panel-line);
+    }
+    .carte-membre .nom-membre { font-weight: 600; font-size: 14px; }
+    .carte-membre .age-membre { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <div class="app" id="app"></div>
+
+  <script type="module">
+    import { supabase } from './js/supabaseClient.js';
+    import { construireSidebar, initSidebar, exigerConnexion } from './js/sidebar.js';
+
+    await exigerConnexion();
+
+    document.getElementById('app').innerHTML = `
+      ${construireSidebar('membres')}
+      <main class="contenu" style="max-width: 720px;">
+        <p class="eyebrow">Communauté</p>
+        <h1>Membres</h1>
+        <p class="sous-titre">Toutes les personnes inscrites sur le site.</p>
+        <div class="grille-membres" id="grille"></div>
+      </main>
+    `;
+
+    initSidebar();
+
+    const placeholder = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56"><rect width="56" height="56" fill="#22323b"/></svg>`
+    );
+
+    const { data: membres, error } = await supabase
+      .from('profils')
+      .select('nom, prenom, age, avatar_url')
+      .order('nom', { ascending: true });
+
+    const grille = document.getElementById('grille');
+
+    if (error) {
+      grille.textContent = "Impossible de charger les membres : " + error.message;
+    } else {
+      membres.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'carte-membre';
+        div.innerHTML = `
+          <img src="${m.avatar_url || placeholder}" alt="">
+          <div class="nom-membre"></div>
+          <div class="age-membre"></div>
+        `;
+        div.querySelector('.nom-membre').textContent = `${m.prenom} ${m.nom}`;
+        div.querySelector('.age-membre').textContent = `${m.age} ans`;
+        grille.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>

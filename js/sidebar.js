@@ -4,6 +4,7 @@ export function construireSidebar(pageActive) {
   const pages = [
     { id: 'accueil', href: 'index.html', label: 'Accueil' },
     { id: 'profil', href: 'profil.html', label: 'Mon profil' },
+    { id: 'membres', href: 'membres.html', label: 'Membres' },
     { id: 'chat', href: 'chat.html', label: 'Salon' }
   ];
 

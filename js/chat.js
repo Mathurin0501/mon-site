@@ -10,12 +10,61 @@ export async function initChat(session) {
   const monPrenom = profil ? profil.prenom : 'Anonyme';
   const fil = document.getElementById('fil');
 
-  function afficherMessage(msg) {
+  function formaterHeure(dateStr) {
+    const d = new Date(dateStr);
+    return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  async function chargerReactions(messageId) {
+    const { data } = await supabase
+      .from('reactions')
+      .select('user_id')
+      .eq('message_id', messageId);
+    return data || [];
+  }
+
+  async function afficherMessage(msg) {
+    const reactions = await chargerReactions(msg.id);
+    const dejaReagi = reactions.some(r => r.user_id === session.user.id);
+
     const div = document.createElement('div');
     div.className = 'msg';
-    div.innerHTML = `<div class="auteur"></div><div class="texte"></div>`;
-    div.querySelector('.auteur').textContent = msg.prenom;
+    div.dataset.messageId = msg.id;
+    div.innerHTML = `
+      <div class="auteur"></div>
+      <div class="texte"></div>
+      <button class="reaction-btn" style="background:none;border:none;cursor:pointer;font-size:13px;margin-top:4px;color:${dejaReagi ? 'var(--gold)' : 'var(--muted)'};padding:0;">
+        ❤️ <span class="compteur">${reactions.length}</span>
+      </button>
+    `;
+    div.querySelector('.auteur').textContent = `${msg.prenom} · ${formaterHeure(msg.created_at)}`;
     div.querySelector('.texte').textContent = msg.contenu;
+
+    const btn = div.querySelector('.reaction-btn');
+    btn.addEventListener('click', async () => {
+      const aReagi = btn.style.color === 'var(--gold)' || btn.dataset.reagi === 'true';
+
+      if (btn.dataset.reagi === 'true') {
+        await supabase.from('reactions').delete()
+          .eq('message_id', msg.id)
+          .eq('user_id', session.user.id);
+        btn.dataset.reagi = 'false';
+        btn.style.color = 'var(--muted)';
+        btn.querySelector('.compteur').textContent =
+          parseInt(btn.querySelector('.compteur').textContent) - 1;
+      } else {
+        await supabase.from('reactions').insert({
+          message_id: msg.id,
+          user_id: session.user.id
+        });
+        btn.dataset.reagi = 'true';
+        btn.style.color = 'var(--gold)';
+        btn.querySelector('.compteur').textContent =
+          parseInt(btn.querySelector('.compteur').textContent) + 1;
+      }
+    });
+    btn.dataset.reagi = dejaReagi ? 'true' : 'false';
+
     fil.appendChild(div);
     fil.scrollTop = fil.scrollHeight;
   }
@@ -29,7 +78,7 @@ export async function initChat(session) {
   if (error) {
     console.error('Erreur de chargement des messages :', error.message);
   } else {
-    messages.forEach(afficherMessage);
+    for (const m of messages) await afficherMessage(m);
   }
 
   supabase
