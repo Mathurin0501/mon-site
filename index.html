@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accueil</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app" id="app"></div>
+
+  <script type="module">
+    import { construireSidebar, initSidebar, exigerConnexion } from './js/sidebar.js';
+
+    await exigerConnexion();
+
+    document.getElementById('app').innerHTML = `
+      ${construireSidebar('accueil')}
+      <main class="contenu">
+        <p class="eyebrow">Tableau de bord</p>
+        <h1>Bienvenue</h1>
+        <p class="sous-titre">Tu es connecté. Utilise le menu à gauche pour naviguer.</p>
+      </main>
+    `;
+
+    initSidebar();
+  </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salon</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app" id="app"></div>
+
+  <script type="module">
+    import { construireSidebar, initSidebar, exigerConnexion } from './js/sidebar.js';
+    import { initChat } from './js/chat.js';
+
+    const session = await exigerConnexion();
+
+    document.getElementById('app').innerHTML = `
+      ${construireSidebar('chat')}
+      <main class="contenu" style="max-width: 560px;">
+        <p class="eyebrow">Salon commun</p>
+        <h1>Discussion</h1>
+        <div id="fil"></div>
+        <form id="formMessage">
+          <input type="text" id="contenu" placeholder="Écris un message..." required autocomplete="off">
+          <button type="submit">Envoyer</button>
+        </form>
+      </main>
+    `;
+
+    initSidebar();
+    initChat(session);
+  </script>
+</body>
+</html>

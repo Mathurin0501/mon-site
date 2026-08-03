@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon profil</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app" id="app"></div>
+
+  <script type="module">
+    import { supabase } from './js/supabaseClient.js';
+    import { construireSidebar, initSidebar, exigerConnexion } from './js/sidebar.js';
+
+    const session = await exigerConnexion();
+
+    document.getElementById('app').innerHTML = `
+      ${construireSidebar('profil')}
+      <main class="contenu">
+        <p class="eyebrow">Fiche personnelle</p>
+        <h1>Mon profil</h1>
+        <div class="fiche" style="margin-top: 24px;">
+          <p><span>Nom</span><span id="nom"></span></p>
+          <p><span>Prénom</span><span id="prenom"></span></p>
+          <p><span>Âge</span><span id="age"></span></p>
+        </div>
+      </main>
+    `;
+
+    initSidebar();
+
+    const { data: profil, error } = await supabase
+      .from('profils')
+      .select('nom, prenom, age')
+      .eq('id', session.user.id)
+      .single();
+
+    if (error) {
+      console.error('Erreur de récupération du profil :', error.message);
+    } else {
+      document.getElementById('nom').textContent = profil.nom;
+      document.getElementById('prenom').textContent = profil.prenom;
+      document.getElementById('age').textContent = profil.age;
+    }
+  </script>
+</body>
+</html>
