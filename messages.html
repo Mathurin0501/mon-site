@@ -12,9 +12,12 @@
       background: var(--panel); overflow: hidden; height: fit-content;
     }
     .conv-item {
-      display: block; padding: 12px 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; cursor: pointer;
       border-bottom: 1px solid var(--panel-line); font-size: 14px;
     }
+    .conv-item .conv-nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .conv-item .badge { margin-left: 8px; flex-shrink: 0; }
     .conv-item:last-child { border-bottom: none; }
     .conv-item:hover { background: var(--bg); }
     .conv-item.actif { background: var(--bg); color: var(--gold); }

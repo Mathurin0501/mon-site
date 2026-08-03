@@ -32,6 +32,36 @@ async function nomAffiche(userId) {
   return data ? `${data.prenom} ${data.nom}` : 'Utilisateur';
 }
 
+async function compterNonLus(conversationId) {
+  const map = JSON.parse(localStorage.getItem('dernierLuMessages') || '{}');
+  const seuil = map[conversationId] || '1970-01-01T00:00:00.000Z';
+  const { count } = await supabase
+    .from('messages_prives')
+    .select('*', { count: 'exact', head: true })
+    .eq('conversation_id', conversationId)
+    .neq('sender_id', monId)
+    .gt('created_at', seuil);
+  return count || 0;
+}
+
+function afficherBadgeConv(conversationId, nombre) {
+  const div = document.querySelector(`.conv-item[data-conv-id="${conversationId}"]`);
+  if (!div) return;
+  const badge = div.querySelector('.badge');
+  if (nombre > 0) {
+    if (badge) {
+      badge.textContent = nombre > 9 ? '9+' : String(nombre);
+    } else {
+      const span = document.createElement('span');
+      span.className = 'badge';
+      span.textContent = nombre > 9 ? '9+' : String(nombre);
+      div.appendChild(span);
+    }
+  } else if (badge) {
+    badge.remove();
+  }
+}
+
 async function chargerConversations() {
   const { data: convs, error } = await supabase
     .from('conversations')
@@ -50,10 +80,24 @@ async function chargerConversations() {
   for (const conv of convs) {
     const autreId = conv.user1 === monId ? conv.user2 : conv.user1;
     const nom = await nomAffiche(autreId);
+    const nonLus = await compterNonLus(conv.id);
 
     const div = document.createElement('div');
     div.className = 'conv-item';
-    div.textContent = nom;
+    div.dataset.convId = conv.id;
+
+    const spanNom = document.createElement('span');
+    spanNom.className = 'conv-nom';
+    spanNom.textContent = nom;
+    div.appendChild(spanNom);
+
+    if (nonLus > 0) {
+      const badge = document.createElement('span');
+      badge.className = 'badge';
+      badge.textContent = nonLus > 9 ? '9+' : String(nonLus);
+      div.appendChild(badge);
+    }
+
     div.addEventListener('click', () => ouvrirConversation(conv.id, nom));
     liste.appendChild(div);
   }
@@ -88,9 +132,10 @@ async function ouvrirConversation(conversationId, nomAutre) {
   conversationActive = conversationId;
 
   document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('actif'));
-  const items = [...document.querySelectorAll('.conv-item')];
-  const match = items.find(el => el.textContent === nomAutre);
+  const match = document.querySelector(`.conv-item[data-conv-id="${conversationId}"]`);
   if (match) match.classList.add('actif');
+
+  afficherBadgeConv(conversationId, 0);
 
   const fil = document.getElementById('filPrive');
   fil.innerHTML = '';
@@ -161,6 +206,23 @@ document.getElementById('formMessagePrive').addEventListener('submit', async (e)
   }
   input.value = '';
 });
+
+// Met à jour le badge d'une conversation quand un message arrive alors
+// qu'elle n'est pas actuellement ouverte
+supabase
+  .channel('badges-conversations')
+  .on(
+    'postgres_changes',
+    { event: 'INSERT', schema: 'public', table: 'messages_prives' },
+    async (payload) => {
+      const msg = payload.new;
+      if (msg.sender_id === monId) return;
+      if (msg.conversation_id === conversationActive) return;
+      const nonLus = await compterNonLus(msg.conversation_id);
+      afficherBadgeConv(msg.conversation_id, nonLus);
+    }
+  )
+  .subscribe();
 
 // Si on arrive depuis "Envoyer un message" sur la page Membres
 const params = new URLSearchParams(window.location.search);
