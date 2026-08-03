@@ -33,7 +33,7 @@ export async function initChat(session) {
     div.innerHTML = `
       <div class="auteur"></div>
       <div class="texte"></div>
-      <button class="reaction-btn" style="background:none;border:none;cursor:pointer;font-size:13px;margin-top:4px;color:${dejaReagi ? 'var(--gold)' : 'var(--muted)'};padding:0;">
+      <button class="reaction-btn" style="background:none;border:none;cursor:pointer;font-size:13px;margin-top:4px;color:${dejaReagi ? 'var(--gold)' : 'var(--muted)'};padding:0;width:auto;display:block;text-align:left;">
         ❤️ <span class="compteur">${reactions.length}</span>
       </button>
     `;
