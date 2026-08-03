@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient.js';
+import { marquerSalonLu } from './sidebar.js';
 
 export async function initChat(session) {
   const { data: profil } = await supabase
@@ -80,6 +81,8 @@ export async function initChat(session) {
   } else {
     for (const m of messages) await afficherMessage(m);
   }
+
+  marquerSalonLu();
 
   supabase
     .channel('messages-realtime')

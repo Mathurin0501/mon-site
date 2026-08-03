@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { construireSidebar, initSidebar, exigerConnexion } from './sidebar.js';
+import { construireSidebar, initSidebar, exigerConnexion, marquerConversationLue } from './sidebar.js';
 
 const session = await exigerConnexion();
 const monId = session.user.id;
@@ -106,6 +106,8 @@ async function ouvrirConversation(conversationId, nomAutre) {
     msgs.forEach(afficherMessagePrive);
   }
 
+  marquerConversationLue(conversationId);
+
   if (canalRealtime) supabase.removeChannel(canalRealtime);
 
   canalRealtime = supabase
@@ -113,7 +115,10 @@ async function ouvrirConversation(conversationId, nomAutre) {
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'messages_prives', filter: `conversation_id=eq.${conversationId}` },
-      (payload) => afficherMessagePrive(payload.new)
+      (payload) => {
+        afficherMessagePrive(payload.new);
+        marquerConversationLue(conversationId);
+      }
     )
     .subscribe();
 }
