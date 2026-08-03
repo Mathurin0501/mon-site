@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .messagerie { display: grid; grid-template-columns: 220px 1fr; gap: 20px; max-width: 760px; }
+    .liste-conversations {
+      border: 1px solid var(--panel-line); border-radius: 8px;
+      background: var(--panel); overflow: hidden; height: fit-content;
+    }
+    .conv-item {
+      display: block; padding: 12px 14px; cursor: pointer;
+      border-bottom: 1px solid var(--panel-line); font-size: 14px;
+    }
+    .conv-item:last-child { border-bottom: none; }
+    .conv-item:hover { background: var(--bg); }
+    .conv-item.actif { background: var(--bg); color: var(--gold); }
+    #filPrive {
+      height: 340px; overflow-y: auto; border: 1px solid var(--panel-line);
+      border-radius: 8px; padding: 16px; margin-bottom: 16px; background: var(--panel);
+    }
+    .msg-prive { padding: 8px 0; border-bottom: 1px solid var(--panel-line); }
+    .msg-prive:last-child { border-bottom: none; }
+    .msg-prive .auteur { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gold); font-weight: 600; margin-bottom: 2px; }
+    #formMessagePrive { display: flex; gap: 8px; }
+    #formMessagePrive input { flex: 1; }
+    #formMessagePrive button { width: auto; margin-top: 0; padding: 11px 20px; }
+    @media (max-width: 720px) {
+      .messagerie { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app"></div>
+
+  <script type="module" src="js/messages.js"></script>
+</body>
+</html>

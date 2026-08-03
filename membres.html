@@ -53,9 +53,12 @@
       `<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56"><rect width="56" height="56" fill="#22323b"/></svg>`
     );
 
+    const { data: sessionData } = await supabase.auth.getSession();
+    const monId = sessionData.session.user.id;
+
     const { data: membres, error } = await supabase
       .from('profils')
-      .select('nom, prenom, age, avatar_url')
+      .select('id, nom, prenom, age, avatar_url')
       .order('nom', { ascending: true });
 
     const grille = document.getElementById('grille');
@@ -73,6 +76,17 @@
         `;
         div.querySelector('.nom-membre').textContent = `${m.prenom} ${m.nom}`;
         div.querySelector('.age-membre').textContent = `${m.age} ans`;
+
+        if (m.id !== monId) {
+          const btn = document.createElement('button');
+          btn.textContent = 'Envoyer un message';
+          btn.style.cssText = 'margin-top:10px;width:100%;font-size:12px;padding:8px 0;';
+          btn.addEventListener('click', () => {
+            window.location.href = `messages.html?user=${m.id}`;
+          });
+          div.appendChild(btn);
+        }
+
         grille.appendChild(div);
       });
     }

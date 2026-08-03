@@ -5,6 +5,7 @@ export function construireSidebar(pageActive) {
     { id: 'accueil', href: 'index.html', label: 'Accueil' },
     { id: 'profil', href: 'profil.html', label: 'Mon profil' },
     { id: 'membres', href: 'membres.html', label: 'Membres' },
+    { id: 'messages', href: 'messages.html', label: 'Messages' },
     { id: 'chat', href: 'chat.html', label: 'Salon' }
   ];
 
